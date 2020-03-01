@@ -49,5 +49,9 @@ public class HomeController {
         model.addAttribute("discussPosts",discussPosts);
         return "index";
     }
+    //todo 待完成
+    public void add(){
+
+    }
 
 }
