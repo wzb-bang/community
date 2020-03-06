@@ -16,19 +16,19 @@
         where id = #{id}
     </select>
 
-    <select id="selectByName" resultType="User">
+    <select id="selectByName" resultType="com.nowcoder.community.entity.User">
         select <include refid="selectFields"></include>
         from user
         where username = #{username}
     </select>
 
-    <select id="selectByEmail" resultType="User">
+    <select id="selectByEmail" resultType="com.nowcoder.community.entity.User">
         select <include refid="selectFields"></include>
         from user
         where email = #{email}
     </select>
 
-    <insert id="insertUser" parameterType="User" keyProperty="id">
+    <insert id="insertUser" parameterType="com.nowcoder.community.entity.User" keyProperty="id">
         insert into user (<include refid="insertFields"></include>)
         values(#{username}, #{password}, #{salt}, #{email}, #{type}, #{status}, #{activationCode}, #{headerUrl}, #{createTime})
     </insert>
