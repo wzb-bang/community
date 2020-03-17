@@ -56,7 +56,7 @@ public class UserController implements CommunityConstant {
     @LoginRequired
     @RequestMapping(path="/setting",method = GET)
     public String getSettingPage(){
-        return "/site/setting";
+        return "site/setting";
     }
 
     @LoginRequired
@@ -64,13 +64,13 @@ public class UserController implements CommunityConstant {
     public String uploadHeader(MultipartFile headerImage, Model model){
         if (headerImage == null){
             model.addAttribute("error","您还没有选择图片!");
-            return "/site/setting";
+            return "site/setting";
         }
         String fileName = headerImage.getOriginalFilename();
         String suffix = fileName.substring(fileName.lastIndexOf("."));
         if (StringUtils.isBlank(suffix)){
             model.addAttribute("error","文件格式不正确");
-            return "/site/setting";
+            return "site/setting";
         }
         //生成随机文件名
         fileName=CommunityUtil.generateUUID()+suffix;
@@ -81,6 +81,7 @@ public class UserController implements CommunityConstant {
             headerImage.transferTo(dest);
         } catch (IOException e) {
             logger.error("上传文件失败: "+e.getMessage());
+            logger.error("上传文件失败路径: "+dest);
             throw new RuntimeException("上传文件失败,服务器发生异常!",e);
         }
         //更新当前用户的头像路径(web访问路径)
@@ -118,20 +119,20 @@ public class UserController implements CommunityConstant {
         //对密码进行判空处理
         if (StringUtils.isBlank(oldPassword)||StringUtils.isBlank(newPassword)){
             model.addAttribute("passwordMsg","密码不能为空!");
-            return "/site/setting";
+            return "site/setting";
         }
         //验证密码
         oldPassword = CommunityUtil.md5(oldPassword + user.getSalt());
         if (!user.getPassword().equals(oldPassword)){
             model.addAttribute("passwordMsg","原密码不正确!");
-            return "/site/setting";
+            return "site/setting";
         }
         //更新密码
         newPassword =CommunityUtil.md5(newPassword +user.getSalt());
         userService.updatePassword(user.getId(),newPassword);
         model.addAttribute("msg","更新密码成功,请重新登录");
         model.addAttribute("target","/logout");
-        return "/site/operate-result";
+        return "site/operate-result";
     }
     //个人主页
     @RequestMapping(path="/profile/{userId}",method = GET)
@@ -158,7 +159,7 @@ public class UserController implements CommunityConstant {
         }
         model.addAttribute("hasFollowed",hasFollowed);
 
-        return "/site/profile";
+        return "site/profile";
     }
 
 }

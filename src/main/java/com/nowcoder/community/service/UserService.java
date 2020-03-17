@@ -12,14 +12,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -96,6 +94,7 @@ public class UserService implements CommunityConstant {
         user.setStatus(0);
         user.setActivationCode(CommunityUtil.generateUUID());
         user.setHeaderUrl(String.format("http://images.nowcoder.com/head/%dt.png",new Random().nextInt(1000)));
+        user.setCreateTime(new Date());
         userMapper.insertUser(user);
 
         //激活邮件
@@ -104,7 +103,7 @@ public class UserService implements CommunityConstant {
 
         String url=domain+contextPath+"/activation/"+user.getId()+"/"+user.getActivationCode();
         context.setVariable("url",url);
-        String content = templateEngine.process("/mail/activation", context);
+        String content = templateEngine.process("mail/activation", context);
         mailClient.sendMail(user.getEmail(),"激活账号",content);
 
         return map;
@@ -211,5 +210,22 @@ public class UserService implements CommunityConstant {
     private void clearCache(int userId){
         String redisKey=RedisKeyUtil.getUserKey(userId);
         redisTemplate.delete(redisKey);
+    }
+
+    public Collection<? extends GrantedAuthority> getAuthorities(int userId){
+        User user =this.findUserById(userId);
+
+        List<GrantedAuthority> list=new ArrayList<>();
+        list.add(new GrantedAuthority() {
+            @Override
+            public String getAuthority() {
+                switch (user.getType()){
+                    case 1:return AUTHORITY_ADMIN;
+                    case 2:return AUTHORITY_MODERATOR;
+                    default: return AUTHORITY_USER;
+                }
+            }
+        });
+        return list;
     }
 }

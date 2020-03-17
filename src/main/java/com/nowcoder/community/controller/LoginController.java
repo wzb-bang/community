@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -52,12 +53,12 @@ public class LoginController implements CommunityConstant {
 
     @RequestMapping(path="/register",method = GET)
     public String getRegisterPage(){
-        return "/site/register";
+        return "site/register";
     }
 
     @RequestMapping(path="/login",method = GET)
     public String getLoginPage(){
-        return "/site/login";
+        return "site/login";
     }
     @RequestMapping(path = "/login",method = POST)
     public String login(String username, String password, String code, boolean rememberme,
@@ -72,7 +73,7 @@ public class LoginController implements CommunityConstant {
         }
         if (StringUtils.isBlank(kaptcha) || StringUtils.isBlank(code) || !kaptcha.equalsIgnoreCase(code)){
             model.addAttribute("codeMsg","验证码不正确!");
-            return "/site/login";
+            return "site/login";
         }
         //检查账号,密码
         int expiredSeconds = rememberme?REMEMBER_EXPIRED_SECONDS:DEFAULT_EXPIRED_SECONDS;
@@ -87,7 +88,7 @@ public class LoginController implements CommunityConstant {
             model.addAttribute("usernameMsg",map.get("usernameMsg"));
             model.addAttribute("passwordMsg",map.get("passwordMsg"));
             model.addAttribute("emailMsg",map.get("emailMsg"));
-            return "/site/login";
+            return "site/login";
         }
     }
 
@@ -97,12 +98,12 @@ public class LoginController implements CommunityConstant {
         if (map == null || map.isEmpty()){
             model.addAttribute("msg","注册成功,我们已经向您的邮箱发送一封激活邮件,请尽快激活");
             model.addAttribute("target","/index");
-            return "/site/operate-result";
+            return "site/operate-result";
         }else{
             model.addAttribute("usernameMsg",map.get("usernameMsg"));
             model.addAttribute("passwordMsg",map.get("passwordMsg"));
             model.addAttribute("emailMsg",map.get("emailMsg"));
-            return "/site/register";
+            return "site/register";
         }
     }
 
@@ -120,7 +121,7 @@ public class LoginController implements CommunityConstant {
             model.addAttribute("msg","激活失败,您提供的激活码不正确!");
             model.addAttribute("target","/index");
         }
-        return "/site/operate-result";
+        return "site/operate-result";
     }
 
     @RequestMapping(path="/kaptcha",method = GET)
@@ -153,6 +154,7 @@ public class LoginController implements CommunityConstant {
     @RequestMapping(path = "/logout",method = GET)
     public String logout(@CookieValue("ticket")String ticket){
         userService.logout(ticket);
+        SecurityContextHolder.clearContext();
         return "redirect:/login";
     }
 }
